@@ -7,6 +7,7 @@ import math
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from time import time
+import os
 
 t1 = time()
 # Constants
@@ -52,137 +53,6 @@ ax.plot(20*xR,20*yR,zR, color='grey', linewidth=0.2)
 ax.plot(22*xR,22*yR,zR, color='grey', linewidth=0.2)
 ax.plot([-15,15],[0,0],[0,0], color='grey', linewidth=0.2)
 ax.plot([0,0],[-15,15],[0,0], color='grey', linewidth=0.2)
-
-# Function defining an individual field line in Cartesian coordinates
-def dipole(x0,y0,z0):
-    h = 0.05
-    a = 10000000
-    x = [0] * a
-    y = [0] * a
-    z = [0] * a
-    r = [1] * a
-    x[0] = x0
-    y[0] = y0
-    z[0] = z0
-    # Bx = Bc * ((3*x0*z0)/((x0)**2+(y0)**2+(z0)**2)**(5/2))
-    # By = Bc * ((3*y0*z0)/((x0)**2+(y0)**2+(z0)**2)**(5/2))
-    # Bz = Bc * (3*(z0)**2-((x0)**2+(y0)**2+(z0)**2))/(((x0)**2+(y0)**2+(z0)**2)**(5/2))
-    if y0 < 0:
-        print(f"{180 - round(math.degrees(math.asin(z0)))} degrees")
-    else:
-        print(f"{round(math.degrees(math.asin(z0)))} degrees") # Shows which starting degree is loading
-    i = 1
-    r[0] = ((x0)**2+(y0)**2+(z0)**2)**(1/2)
-    x_list = [x0]
-    y_list = [y0]
-    z_list = [z0]
-    # Runge-Kutta 4th-order loop for a field line with a given starting point
-    for i in range (1,a):
-        p1 = Bc * (3*x[i-1]*z[i-1])/(((x[i-1])**2+(y[i-1])**2+(z[i-1])**2)**(5/2))
-        p2 = Bc * (3*(x[i-1]+(h/2)*p1)*(z[i-1]+(h/2)*p1))/(((x[i-1]+(h/2)*p1)**2+(y[i-1]+(h/2)*p1)**2+(z[i-1]+(h/2)*p1)**2)**(5/2))
-        p3 = Bc * (3*(x[i-1]+(h/2)*p2)*(z[i-1]+(h/2)*p2))/(((x[i-1]+(h/2)*p2)**2+(y[i-1]+(h/2)*p2)**2+(z[i-1]+(h/2)*p2)**2)**(5/2))
-        p4 = Bc * (3*(x[i-1]+h*p3)*(z[i-1]+h*p3))/(((x[i-1]+h*p3)**2+(y[i-1]+h*p3)**2+(z[i-1]+h*p3)**2)**(5/2))
-        q1 = Bc * (3*y[i-1]*z[i-1])/((((x[i-1])**2+y[i-1])**2+(z[i-1])**2)**(5/2))
-        q2 = Bc * (3*(y[i-1]+(h/2)*q1)*(z[i-1]+(h/2)*q1))/(((x[i-1]+(h/2)*q1)**2+(y[i-1]+(h/2)*q1)**2+(z[i-1]+(h/2)*q1)**2)**(5/2))
-        q3 = Bc * (3*(y[i-1]+(h/2)*q2)*(z[i-1]+(h/2)*q2))/(((x[i-1]+(h/2)*q2)**2+(y[i-1]+(h/2)*q2)**2+(z[i-1]+(h/2)*q2)**2)**(5/2))
-        q4 = Bc * (3*(y[i-1]+h*q3)*(z[i-1])+h*q3)/(((x[i-1]+h*q3)**2+(y[i-1]+h*q3)**2+(z[i-1]+h*q3)**2)**(5/2))
-        s1 = Bc * (3*((z[i-1])**2)-((x[i-1])**2+(y[i-1])**2+(z[i-1])**2))/(((x[i-1])**2+(y[i-1])**2+(z[i-1])**2)**(5/2))
-        s2 = Bc * (3*((z[i-1]+(h/2)*s1)**2)-((x[i-1]+(h/2)*s1)**2+(y[i-1]+(h/2)*s1)**2+(z[i-1]+(h/2)*s1)**2))/((((x[i-1]+(h/2)*s1)**2)+(y[i-1]+(h/2)*s1)**2+(z[i-1]+(h/2)*s1)**2)**(5/2))
-        s3 = Bc * (3*((z[i-1]+(h/2)*s2)**2)-((x[i-1]+(h/2)*s2)**2+(y[i-1]+(h/2)*s2)**2+(z[i-1]+(h/2)*s2)**2))/((((x[i-1]+(h/2)*s2)**2)+(y[i-1]+(h/2)*s2)**2+(z[i-1]+(h/2)*s2)**2)**(5/2))
-        s4 = Bc * (3*((z[i-1]+(h*s3))**2)-((x[i-1]+h*s3)**2+(y[i-1]+h*s3)**2+(z[i-1]+h*s3)**2))/((((x[i-1]+h*s3)**2)+(y[i-1]+h*s3)**2+(z[i-1]+h*s3)**2)**(5/2))
-        x[i] = x[i-1] + (h/6)*(p1 + 2*p2 + 2*p3 + p4)
-        y[i] = y[i-1] + (h/6)*(q1 + 2*q2 + 2*q3 + q4)
-        z[i] = z[i-1] + (h/6)*(s1 + 2*s2 + 2*s3 + s4)
-        r[i] = ((x[i])**2+ (y[i])**2 + (z[i])**2)**(1/2)
-        x_list.append(x[i])
-        y_list.append(y[i])
-        z_list.append(z[i])
-        # Loop breaks if radius is below 1, in other words the field line
-        # is complete and y and z default back to zero.
-        if r[i] < 1 or r[i] > 16.5 or z[i] > 13.5 or z[i] < -14.5:
-            break
-        i = i + 1
-
-    # coordinates tilted via rotation matrix
-    x_tilt = np.array(x_list)
-    y_tilt = np.array(y_list)*np.cos(np.radians(-7)) - np.array(z_list)*np.sin(np.radians(-7))
-    z_tilt = np.array(y_list)*np.sin(np.radians(-7)) + np.array(z_list)*np.cos(np.radians(-7))
-    ax.plot(x_tilt, y_tilt, z_tilt, 'r-', alpha=1.0, linewidth=0.9)
-
-# "Negative" function for last legs of high-angle points (b/c the number of
-# steps does not allow for complete field line for angles close to +90 deg)
-def dipole_neg(x0,y0,z0):
-    h = 0.02
-    a = 10000000
-    x = [0] * a
-    y = [0] * a
-    z = [0] * a
-    r = [1] * a
-    x[0] = x0
-    y[0] = y0
-    z[0] = z0
-    # Bx = - Bc * ((3*x0*z0)/((x0)**2+(y0)**2+(z0)**2)**(5/2))
-    # By = - Bc * ((3*y0*z0)/((x0)**2+(y0)**2+(z0)**2)**(5/2))
-    # Bz = - Bc * (3*(z0)**2-((x0)**2+(y0)**2+(z0)**2)**(1/2))/(((x0)**2+(y0)**2+(z0)**2)**(5/2))
-    if y0 < 0:
-        print(f"{-(180 + round(math.degrees(math.asin(z0))))} degrees")
-    else:
-        print(f"{round(math.degrees(math.asin(z0)))} degrees") # Shows which starting degree is loading
-    i = 1
-    r[0] = ((x0)**2+(y0)**2+(z0)**2)**(1/2)
-    x_list = [x0]
-    y_list = [y0]
-    z_list = [z0]
-    # Notice how RK4 components are negative instead of positive.
-    for i in range (1,a):
-        p1 = - Bc * (3*x[i-1]*z[i-1])/(((x[i-1])**2+(y[i-1])**2+(z[i-1])**2)**(5/2))
-        p2 = - Bc * (3*(x[i-1]+(h/2)*p1)*(z[i-1]+(h/2)*p1))/(((x[i-1]+(h/2)*p1)**2+(y[i-1]+(h/2)*p1)**2+(z[i-1]+(h/2)*p1)**2)**(5/2))
-        p3 = - Bc * (3*(x[i-1]+(h/2)*p2)*(z[i-1]+(h/2)*p2))/(((x[i-1]+(h/2)*p2)**2+(y[i-1]+(h/2)*p2)**2+(z[i-1]+(h/2)*p2)**2)**(5/2))
-        p4 = - Bc * (3*(x[i-1]+h*p3)*(z[i-1]+h*p3))/(((x[i-1]+h*p3)**2+(y[i-1]+h*p3)**2+(z[i-1]+h*p3)**2)**(5/2))
-        q1 = - Bc * (3*y[i-1]*z[i-1])/((((x[i-1])**2+y[i-1])**2+(z[i-1])**2)**(5/2))
-        q2 = - Bc * (3*(y[i-1]+(h/2)*q1)*(z[i-1]+(h/2)*q1))/(((x[i-1]+(h/2)*q1)**2+(y[i-1]+(h/2)*q1)**2+(z[i-1]+(h/2)*q1)**2)**(5/2))
-        q3 = - Bc * (3*(y[i-1]+(h/2)*q2)*(z[i-1]+(h/2)*q2))/(((x[i-1]+(h/2)*q2)**2+(y[i-1]+(h/2)*q2)**2+(z[i-1]+(h/2)*q2)**2)**(5/2))
-        q4 = - Bc * (3*(y[i-1]+h*q3)*(z[i-1])+h*q3)/(((x[i-1]+h*q3)**2+(y[i-1]+h*q3)**2+(z[i-1]+h*q3)**2)**(5/2))
-        s1 = - Bc * (3*((z[i-1])**2)-((x[i-1])**2+(y[i-1])**2+(z[i-1])**2))/(((x[i-1])**2+(y[i-1])**2+(z[i-1])**2)**(5/2))
-        s2 = - Bc * (3*((z[i-1]+(h/2)*s1)**2)-((x[i-1]+(h/2)*s1)**2+(y[i-1]+(h/2)*s1)**2+(z[i-1]+(h/2)*s1)**2))/((((x[i-1]+(h/2)*s1)**2)+(y[i-1]+(h/2)*s1)**2+(z[i-1]+(h/2)*s1)**2)**(5/2))
-        s3 = - Bc * (3*((z[i-1]+(h/2)*s2)**2)-((x[i-1]+(h/2)*s2)**2+(y[i-1]+(h/2)*s2)**2+(z[i-1]+(h/2)*s2)**2))/((((x[i-1]+(h/2)*s2)**2)+(y[i-1]+(h/2)*s2)**2+(z[i-1]+(h/2)*s2)**2)**(5/2))
-        s4 = - Bc * (3*((z[i-1]+(h*s3))**2)-((x[i-1]+h*s3)**2+(y[i-1]+h*s3)**2+(z[i-1]+h*s3)**2))/((((x[i-1]+h*s3)**2)+(y[i-1]+h*s3)**2+(z[i-1]+h*s3)**2)**(5/2))
-        x[i] = x[i-1] + (h/6)*(p1 + 2*p2 + 2*p3 + p4)
-        y[i] = y[i-1] + (h/6)*(q1 + 2*q2 + 2*q3 + q4)
-        z[i] = z[i-1] + (h/6)*(s1 + 2*s2 + 2*s3 + s4)
-        r[i] = ((x[i])**2+ (y[i])**2 + (z[i])**2)**(1/2)
-        x_list.append(x[i])
-        y_list.append(y[i])
-        z_list.append(z[i])
-        if r[i] < 1 or r[i] > 16.5 or z[i] > 13.5 or z[i] < -14.5:
-            break
-        i = i + 1
-        
-    x_tilt = np.array(x_list)
-    y_tilt = np.array(y_list)*np.cos(-7*np.pi/180) - np.array(z_list)*np.sin(-7*np.pi/180)
-    z_tilt = np.array(y_list)*np.sin(-7*np.pi/180) + np.array(z_list)*np.cos(-7*np.pi/180)
-    ax.plot(x_tilt, y_tilt, z_tilt, 'r-', alpha=1.0, linewidth=0.9)
-
-# Execution of dipole() and dipole_neg() funtions mapped to Cartesian components from sherical components 
-dipole(0,math.cos(math.radians(52.5)), math.sin(math.radians(52.5)))
-dipole(0,math.cos(math.radians(60)), math.sin(math.radians(60)))
-dipole(0,math.cos(math.radians(67.5)), math.sin(math.radians(67.5)))
-dipole(0,math.cos(math.radians(75)), math.sin(math.radians(75)))
-dipole(0,math.cos(math.radians(82.5)), math.sin(math.radians(82.5)))
-dipole(0,0,1)
-dipole(0,math.cos(math.radians(97.5)), math.sin(math.radians(97.5)))
-dipole(0,math.cos(math.radians(105)), math.sin(math.radians(105)))
-dipole(0,math.cos(math.radians(112.5)), math.sin(math.radians(112.5)))
-dipole(0,math.cos(math.radians(120)), math.sin(math.radians(120)))
-dipole(0,math.cos(math.radians(127.5)), math.sin(math.radians(127.5)))
-
-dipole_neg(0, math.cos(math.radians(255)), math.sin(math.radians(255)))
-dipole_neg(0, math.cos(math.radians(262.5)), math.sin(math.radians(262.5)))
-dipole_neg(0,0,-1)
-dipole_neg(0, math.cos(math.radians(277.5)), math.sin(math.radians(277.5)))
-dipole_neg(0, math.cos(math.radians(285)), math.sin(math.radians(285)))
-print("Magnetic dipole field lines done")
-
 
 # Maps and plots the density points within the torus from an initial data point 
 def mapping(mapping_data):
@@ -251,23 +121,28 @@ def mapping(mapping_data):
         
     return([x_list, y_list, z_list, n_list])
     
-
+# Plots a series of equi-radial data points and their mappings
 def map_to_plot(input_data):
     print(f"Mapping for radius {round(input_data[0][7], 2)} rJ (Jupiter radii)")
     radius_map = []
     
+    # Populates radius_map with mapping() results from input_data argument
     for mapping_data in input_data:
         radius_map.append(mapping(mapping_data))
     
+    # lengths list is built so the minimum length can be accessed, fixing the error of nonexistent elements from unequal length lists
     lengths = []
     for n in range(len(radius_map)):
         lengths.append(len(radius_map[n][0])) 
-
+    
+    # Creates series of points to plot together
     for m in range(min(lengths)):
         x_rad = []
         y_rad = []
         z_rad = []
         n_rad = []
+        
+        # Lists populated then tilted for magnetic equatorial mapping
         for n in range(len(radius_map)):
             x_rad.append(radius_map[n][0][m])
             y_rad.append(radius_map[n][1][m])
@@ -280,7 +155,9 @@ def map_to_plot(input_data):
             y_rad_tilt_neg = np.array(y_rad)*np.cos(7*np.pi/180) - np.array(z_rad)*np.sin(7*np.pi/180)
             z_rad_tilt_neg = -(np.array(y_rad)*np.sin(7*np.pi/180) + np.array(z_rad)*np.cos(7*np.pi/180))
 
+        # Tilted list (now np.arrays) plotted with lines connecting points by adjacent angle
         for index in range(len(x_rad_tilt)-1):
+            # alpha (transparency of lines) to be the mean density of the two points, adjusted to be between 0 and 1
             alpha = (n_rad[index] + n_rad[index+1]) / 2
             ax.plot(x_rad_tilt[index:index+2], y_rad_tilt[index:index+2], z_rad_tilt[index:index+2], color='yellow', alpha=alpha, linewidth=2.5)
             if n != 0:
@@ -289,6 +166,35 @@ def map_to_plot(input_data):
         alpha = (n_rad[-1] + n_rad[0]) / 2
         ax.plot([x_rad_tilt[-1], x_rad_tilt[0]],[y_rad_tilt[-1], y_rad_tilt[0]], [z_rad_tilt[-1], z_rad_tilt[0]], color = 'yellow', alpha=alpha, linewidth=2.5)
         ax.plot([x_rad_tilt_neg[-1], x_rad_tilt_neg[0]],[y_rad_tilt_neg[-1], y_rad_tilt_neg[0]], [z_rad_tilt_neg[-1], z_rad_tilt_neg[0]], color = 'yellow', alpha=alpha, linewidth=2.5)
+
+b_field_x = []
+b_field_y = []
+b_field_z = []
+
+# Takes data from .dat files created from MagFieldLines.py and plots field lines, done to make repetitive use of program faster
+# Without .dat files, program will raise error. For first time use, run MagFieldLines.py before this program.
+# After using MagFieldLines.py, you never need to use it again (unless this or .dat files are moved / modified).
+for data_file in os.listdir('./B_Field_Data'):
+    data = open('./B_Field_Data/' + data_file)
+    if "_x" in data_file:
+        b_x_line = []
+        for text_line in data:
+            b_x_line.append(float(text_line))
+        b_field_x.append(b_x_line)
+    elif "_y" in data_file:
+        b_y_line = []
+        for text_line in data:
+            b_y_line.append(float(text_line))
+        b_field_y.append(b_y_line)
+    elif "_z" in data_file:
+        b_z_line = []
+        for text_line in data:
+            b_z_line.append(float(text_line))
+        b_field_z.append(b_z_line)
+    
+for n in range(len(b_field_x)):
+    plt.plot(b_field_x[n], b_field_y[n], b_field_z[n], 'r-', linewidth=0.9)
+    
 
 # Opens needed .dat files and manipulates them to create lists for entry into map_to_plot() function
 # file1 = open('./data/plots/data/{x}/DENS/DENS{x}{y}_3D.dat')
@@ -304,7 +210,7 @@ my_dens = []
 my_temp_loc = []
 my_temp = []
 my_e_temp = []
-
+No docu
 # Splits .dat files by row and turns rows into lists
 for a in file1:
     my_dens += [a.split()]
@@ -347,10 +253,10 @@ for n in range(0, 208, 13):
         golbat[p].append(zubat[m+n])
     p += 1
 
-# Execution of map_to_plot() functions for all data points mapped to Cartesian coordinates
-for n in range(len(golbat)):
-    crobat = golbat[n]
-    map_to_plot(crobat)
+# # Execution of map_to_plot() functions for all data points mapped to Cartesian coordinates
+# for n in range(len(golbat)):
+#     crobat = golbat[n]
+#     map_to_plot(crobat)
   
 zRef = np.linspace(-15,15,3)
 
