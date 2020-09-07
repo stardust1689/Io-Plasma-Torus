@@ -210,7 +210,7 @@ my_dens = []
 my_temp_loc = []
 my_temp = []
 my_e_temp = []
-No docu
+
 # Splits .dat files by row and turns rows into lists
 for a in file1:
     my_dens += [a.split()]
